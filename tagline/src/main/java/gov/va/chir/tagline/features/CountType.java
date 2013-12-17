@@ -1,0 +1,35 @@
+/**
+ * This file is part of TagLine.
+ *
+ * TagLine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * TagLine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with TagLine.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package gov.va.chir.tagline.features;
+
+public enum CountType {
+	ONE(1),
+	TWO(2),
+	THREE(3);
+	
+	// Enum added so we can recreate features from feature names.
+	// Removes reliance on magic numbers
+	private int count;
+	
+	private CountType(final int count) {
+		this.count = count;
+	}
+	
+	public int getCount() {
+		return count;
+	}
+}
