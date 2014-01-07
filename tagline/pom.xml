@@ -70,6 +70,21 @@
   			  </includes>
   			</configuration>
   		</plugin>
+        <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-shade-plugin</artifactId>
+			<executions>
+				<execution>
+					<phase>package5</phase><!--  Change to "package" to create uber-jar -->
+					<goals>
+						<goal>shade</goal>
+					</goals>
+				</execution>
+			</executions>
+			<configuration>
+				<finalName>uber-${artifactId}-${version}</finalName>
+			</configuration>
+		</plugin>  		
   	</plugins>
   </build>
 </project>

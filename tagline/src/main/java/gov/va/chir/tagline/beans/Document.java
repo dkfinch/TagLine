@@ -64,6 +64,12 @@ public class Document {
 		if (text != null && text.length() > 0) {
 			final String [] array = text.split("\\r?\\n");	
 			
+			// Need to determine number of characters used to end each line
+			// (Assumes the same newline characters are used throughout the text)
+			final int fullLength = text.length();
+			final int reducedLength = text.replaceAll("\\r?\\n", "").length();
+			final int nlChars = (fullLength - reducedLength) / array.length;		
+			
 			int offset = 0;
 			
 			for (int i = 0; i < array.length; i++) {
@@ -73,7 +79,8 @@ public class Document {
 				
 				lines.add(line);
 				
-				offset += array[i].length();
+				// Add newline chars to offset
+				offset += array[i].length() + nlChars;
 			}
 		}
 	}
