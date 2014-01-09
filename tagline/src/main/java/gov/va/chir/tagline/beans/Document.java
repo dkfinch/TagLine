@@ -17,6 +17,7 @@
 package gov.va.chir.tagline.beans;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,6 +55,10 @@ public class Document {
 	
 	public void addAnnotation(final Annotation annotation) {
 		annotations.add(annotation);
+	}
+	
+	public void addAnnotations(final Collection<Annotation> annotations) {
+		this.annotations.addAll(annotations);
 	}
 	
 	public void addFeature(final String feature, final Object result) {
@@ -157,10 +162,12 @@ public class Document {
 	private void setOffsets() {
 		int offset = 0;
 		
+		final int nlChars = System.getProperty("line.separator").length();
+		
 		for (int i = 0; i < lines.size(); i++) {
 			lines.get(i).setLineNum((i + 1));
 			lines.get(i).setOffset(offset);
-			offset += lines.get(i).getText().length();
+			offset += lines.get(i).getText().length() + nlChars;
 		}
 	}
 }

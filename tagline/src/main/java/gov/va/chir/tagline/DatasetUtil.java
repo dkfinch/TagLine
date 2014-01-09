@@ -197,10 +197,6 @@ public enum DatasetUtil {
 		// Add data
 		for (Document document : documents) {
 			final Map<String, Object> docFeatures = document.getFeatures();
-
-System.out.println("-----------------------------------");
-System.out.println("ORIG: " + document.getName());
-System.out.println(docId.toString());
 			
 			for (Line line : document.getLines()) {
 				final Instance instance = new DenseInstance(attrMap.size());

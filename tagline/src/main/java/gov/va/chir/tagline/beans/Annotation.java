@@ -20,11 +20,11 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class Annotation {
-	private AnnotationType type;
+	private String type;
 	private int start;
 	private int end;
 	
-	public Annotation(final AnnotationType type, final int start, final int end) {
+	public Annotation(final String type, final int start, final int end) {
 		this.type = type;
 		this.start = start;
 		this.end = end;
@@ -52,7 +52,7 @@ public class Annotation {
 		return start;
 	}
 	
-	public AnnotationType getType() {
+	public String getType() {
 		return type;
 	}
 
