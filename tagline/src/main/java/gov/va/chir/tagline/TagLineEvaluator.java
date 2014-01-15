@@ -22,16 +22,24 @@ import gov.va.chir.tagline.features.Extractor;
 import gov.va.chir.tagline.features.Feature;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
 import weka.classifiers.evaluation.Evaluation;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.trees.J48;
+import weka.core.Attribute;
 import weka.core.Instances;
+import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
+import weka.filters.unsupervised.instance.RemoveWithValues;
 
 public class TagLineEvaluator {
 	private static final int NUM_FOLDS = 10;
@@ -62,10 +70,10 @@ public class TagLineEvaluator {
 		evaluate(type, new String[]{});
 	}
 		
-	// The problem with the evaluate method below is the cross-fold validation
+	// Weka's built-in cross-fold validation method is not used because it would 
 	// assumes the lines are independent of one another.  This is not true.
-	// We should be splitting based on documents and then train / test 
-	// lines from different documents.
+	// Thus, we split based on documents and then train / test lines from 
+	// different documents.
 	public void evaluate(final ClassifierType type, final String... options) throws Exception {
 		Classifier model = null;
 		
@@ -82,17 +90,108 @@ public class TagLineEvaluator {
 			}
 
 			fc.setClassifier(model);
+			
+			final Attribute attrDocId = instances.attribute(DatasetUtil.DOC_ID);
+			
+			if (attrDocId == null) {
+				throw new IllegalStateException(String.format(
+						"%s attribute must exist", DatasetUtil.DOC_ID));
+			}
+			final List<Set<Object>> foldDocIds = getFoldDocIds(attrDocId);
+			
+			final RemoveWithValues rmv = new RemoveWithValues();
+			
+			// RemoveWithValues filter is not zero-based!
+			rmv.setAttributeIndex(String.valueOf(attrDocId.index() + 1));
+			rmv.setModifyHeader(false);
 
+			final Evaluation eval = new Evaluation(instances);
+			
 		    // Perform cross-validation
-		    final Evaluation eval = new Evaluation(instances);
-		    eval.crossValidateModel(fc, instances, numFolds, new Random(randomSeed));
+			for (int i = 0; i < numFolds; i++) {
+				rmv.setNominalIndicesArr(
+						getAttributeIndexValues(attrDocId, foldDocIds.get(i)));
+				
+				rmv.setInvertSelection(false);
+				rmv.setInputFormat(instances);	// Must be called AFTER all options
+				final Instances train = Filter.useFilter(instances, rmv);
+				
+				rmv.setInvertSelection(true);
+				rmv.setInputFormat(instances);	// Must be called AFTER all options
+				final Instances test = Filter.useFilter(instances, rmv);
+				
+				fc.buildClassifier(train);
+				eval.evaluateModel(fc, test);
+			}
 
-			evaluationSummary = eval.toSummaryString();
+			evaluationSummary = String.format("%s%s%s%s%s", 
+					eval.toSummaryString(),
+					System.getProperty("line.separator"),
+					eval.toMatrixString(),
+					System.getProperty("line.separator"),
+					eval.toClassDetailsString()
+					);
+			//eval.
 		}
+	}
+	
+	private int[] getAttributeIndexValues(final Attribute attrDocId, final Set<Object> ids) {
+		int[] indices = new int[ids.size()];
+		
+		int i = 0;
+		
+		for (Object id : ids) {
+			indices[i] = attrDocId.indexOfValue(String.valueOf(id));
+			i++;
+		}
+		
+		return indices;
 	}
 	
 	public String getEvaluationSummary() {
 		return evaluationSummary;
+	}
+	
+	private List<Set<Object>> getFoldDocIds(final Attribute attrDocId) {
+		// Setup list of docs per fold
+		final List<Set<Object>> folds = new ArrayList<Set<Object>>();
+		
+		for (int i = 0; i < numFolds; i++) {
+			folds.add(new HashSet<Object>());
+		}
+		
+		// Get distinct values
+		final List<Object> docIds = new ArrayList<Object>();
+		final Enumeration<?> enumer = attrDocId.enumerateValues();
+		
+		while (enumer.hasMoreElements()) {
+			docIds.add((Object)enumer.nextElement());
+		}
+		
+		if (docIds.size() < numFolds) {
+			throw new IllegalStateException(String.format(
+					"Number of folds must be less than or equal to number of "
+					+ "distinct document IDs [num folds = %d | "
+					+ "num distinct document IDs = %d]", 
+					numFolds, docIds.size()));
+		}
+		
+		// Randomly assign doc IDs to folds
+		final Random random = new Random(randomSeed);
+		
+		int i = 0;
+		int selected = -1;
+		while (!docIds.isEmpty()) {
+			selected = random.nextInt(docIds.size());
+			folds.get(i).add(docIds.get(selected));
+			docIds.remove(selected);
+			
+			if (++i >= numFolds) {
+				i = 0;
+			}
+		}
+		
+		return folds;
 	}
 	
 	public int getNumFolds() {
