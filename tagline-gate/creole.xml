@@ -1,0 +1,14 @@
+<?xml version="1.0"?>  
+<CREOLE-DIRECTORY>  
+   <JAR SCAN="true">tagline-gate-0.0.1-SNAPSHOT.jar</JAR>
+   <JAR>lib/commons-collections-3.2.1.jar</JAR>
+   <JAR>lib/commons-configuration-1.10.jar</JAR>
+   <JAR>lib/commons-io-2.4.jar</JAR>
+   <JAR>lib/commons-lang3-3.1.jar</JAR>
+   <JAR>lib/commons-logging-1.1.3.jar</JAR>
+   <JAR>lib/externalsortinginjava-0.1.8.jar</JAR>
+   <JAR>lib/junit-3.8.1.jar</JAR>
+   <JAR>lib/tagline-0.0.1-SNAPSHOT.jar</JAR>
+   <JAR>lib/weka-dev-3.7.10.jar</JAR>
+   <JAR>lib/pentaho-package-manager-1.0.8.jar</JAR>   
+</CREOLE-DIRECTORY> 
