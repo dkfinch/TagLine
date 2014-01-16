@@ -17,7 +17,6 @@
 package gov.va.chir.tagline.structure;
 
 import gov.va.chir.tagline.beans.Annotation;
-import gov.va.chir.tagline.beans.AnnotationType;
 import gov.va.chir.tagline.beans.Document;
 
 import java.util.Set;
