@@ -33,9 +33,13 @@ public class Configuration {
 	private static final String TRAIN_FILE_IN_DATASET = "train.file.input.dataset";
 	private static final String TRAIN_FILE_OUT_MODEL = "train.file.output.model";
 	private static final String TRAIN_FILE_OUT_DATASET = "train.file.output.dataset";	
+	private static final String TRAIN_CLASSIFIER_TYPE = "train.classifier.type";
+	private static final String TRAIN_CLASSIFIER_OPTS = "train.classifier.options";
 	
 	private static final String EVAL_FILE_IN_DATASET = "eval.file.input.dataset";
 	private static final String EVAL_FILE_OUT_PERF = "eval.file.output.performance";
+	private static final String EVAL_CLASSIFIER_TYPE = "eval.classifier.type";
+	private static final String EVAL_CLASSIFIER_OPTS = "eval.classifier.options";
 	
 	private static final String SCORE_FILE_IN_DATASET = "score.file.input.dataset";
 	private static final String SCORE_FILE_IN_MODEL = "score.file.input.model";
@@ -63,7 +67,7 @@ public class Configuration {
 			e.printStackTrace();
 		}				
 	}
-
+	
 	public String getConfigContents() throws IOException {
 		return FileUtils.readFileToString(new File(filename));
 	}
@@ -71,11 +75,11 @@ public class Configuration {
 	public File getCreateFileOutputDataset() {
 		return new File(config.getString(CREATE_FILE_OUT_DATASET));
 	}
-
+	
 	public int getCreateMaxLineLength() {
 		return config.getInt(CREATE_MAX_LINE_LENGTH);
 	}
-
+	
 	public int getCreateMaxLinesPerDoc() {
 		return config.getInt(CREATE_MAX_LINES_PER_DOC);
 	}
@@ -83,7 +87,7 @@ public class Configuration {
 	public int getCreateNumClasses() {
 		return config.getInt(CREATE_CLASSES);
 	}
-	
+
 	public int getCreateNumDocs() {
 		return config.getInt(CREATE_DOCS);
 	}
@@ -91,15 +95,23 @@ public class Configuration {
 	public int getCreateRandomSeed() {
 		return config.getInt(CREATE_RANDOMSEED);
 	}
+
+	public String[] getEvalClassifierOptions() {
+		return config.getStringArray(EVAL_CLASSIFIER_OPTS);
+	}
+	
+	public ClassifierType getEvalClassifierType() {
+		return ClassifierType.getClassifierType(config.getString(EVAL_CLASSIFIER_TYPE));
+	}
 	
 	public File getEvalFileInputDataset() {
 		return new File(config.getString(EVAL_FILE_IN_DATASET));
 	}
-	
+
 	public File getEvalFileOutputPerformance() {
 		return new File(config.getString(EVAL_FILE_OUT_PERF));
 	}
-
+	
 	public File getOutLog() {
 		return new File(config.getString(OUT_LOG));
 	}
@@ -107,16 +119,25 @@ public class Configuration {
 	public File getScoreFileInputDataset() {
 		return new File(config.getString(SCORE_FILE_IN_DATASET));
 	}
-	
+
 	public File getScoreFileInputModel() {
 		return new File(config.getString(SCORE_FILE_IN_MODEL));
 	}
-
+	
 	public File getScoreFileOutputDataset() {
 		return new File(config.getString(SCORE_FILE_OUT_DATASET));
 	}
+	
 	public TaskType getTaskType() {
 		return TaskType.fromString(config.getString(TASK_TYPE));
+	}
+
+	public String[] getTrainClassifierOptions() {
+		return config.getStringArray(TRAIN_CLASSIFIER_OPTS);
+	}
+	
+	public ClassifierType getTrainClassifierType() {
+		return ClassifierType.getClassifierType(config.getString(TRAIN_CLASSIFIER_TYPE));
 	}
 	
 	public File getTrainFileInputDataset() {

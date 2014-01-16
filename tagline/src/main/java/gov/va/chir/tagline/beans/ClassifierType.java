@@ -17,5 +17,17 @@
 package gov.va.chir.tagline.beans;
 
 public enum ClassifierType {
-	J48;
+	J48,
+	LMT,
+	RandomForest,
+	SVM;
+	
+	public static ClassifierType getClassifierType(final String classifierType) {
+		for (ClassifierType ct : values()) {
+			if (ct.name().equalsIgnoreCase(classifierType)) {
+				return ct;
+			}
+		}
+		return null;
+	}
 }

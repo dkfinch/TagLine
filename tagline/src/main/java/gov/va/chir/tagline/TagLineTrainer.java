@@ -25,8 +25,11 @@ import java.util.Collection;
 
 import weka.classifiers.AbstractClassifier;
 import weka.classifiers.Classifier;
+import weka.classifiers.functions.LibSVM;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.trees.J48;
+import weka.classifiers.trees.LMT;
+import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
 import weka.filters.unsupervised.attribute.Remove;
 
@@ -43,8 +46,18 @@ public class TagLineTrainer {
 	public TagLineTrainer(final ClassifierType type, final String... options) throws Exception {
 		Classifier model = null;
 		
+		if (type == null) {
+			throw new IllegalArgumentException("Classifier type must be specified");
+		}
+		
 		if (type.equals(ClassifierType.J48)) {
 			model = new J48();
+		} else if (type.equals(ClassifierType.LMT)) {
+			model = new LMT();
+		} else if (type.equals(ClassifierType.RandomForest)) {
+			model = new RandomForest();
+		} else if (type.equals(ClassifierType.SVM)) {
+			model = new LibSVM();
 		} else {
 			throw new IllegalArgumentException(String.format(
 					"Classifier type not supported (%s)", type));

@@ -92,7 +92,8 @@ public class TagLineApp {
 	}
 			
 	private void evaluatePerformance(final File log, final File dataset, 
-			final File performance) throws Exception {
+			final File performance, final ClassifierType classifierType, 
+			final String... options) throws Exception {
 		
 		writeLog(log, "Evaluating performance");
 		
@@ -108,7 +109,7 @@ public class TagLineApp {
 		
 		writeLog(log, "Training and evaluating models");
 		final TagLineEvaluator tle = new TagLineEvaluator(docs);
-		tle.evaluate(ClassifierType.J48);
+		tle.evaluate(classifierType, options);
 		
 		writeLog(log, "Saving performance");
 		FileDao.savePerformance(performance, tle.getEvaluationSummary());
@@ -141,7 +142,9 @@ public class TagLineApp {
         } else if (taskType == TaskType.EVALUATE) {
         	evaluatePerformance(log, 
         			config.getEvalFileInputDataset(), 
-        			config.getEvalFileOutputPerformance());
+        			config.getEvalFileOutputPerformance(),
+        			config.getEvalClassifierType(),
+        			config.getEvalClassifierOptions());
         } else if (taskType == TaskType.SCORE) {
         	scoreData(log, 
         			config.getScoreFileInputDataset(),
@@ -151,7 +154,9 @@ public class TagLineApp {
         	trainClassifier(log,
         			config.getTrainFileInputDataset(),
         			config.getTrainFileOutputModel(),
-        			config.getTrainFileOutputDataset());
+        			config.getTrainFileOutputDataset(),
+        			config.getTrainClassifierType(),
+        			config.getTrainClassifierOptions());
         } else {
         	throw new IllegalArgumentException(
         			String.format("Unsupported task type: %s", taskType));
@@ -203,7 +208,9 @@ public class TagLineApp {
 	}
 	
 	private void trainClassifier(final File log, final File dataset, 
-			final File modelFile, final File outputDataset) throws Exception {
+			final File modelFile, final File outputDataset, 
+			final ClassifierType classifierType, 
+			final String... options) throws Exception {
 		
 		writeLog(log, "Training a classifier");
 		
@@ -221,7 +228,7 @@ public class TagLineApp {
 			throw new IllegalStateException("Must have at least one document to score");
 		} else {
 			writeLog(log, "Loading trainer");
-			final TagLineTrainer tlt = new TagLineTrainer(ClassifierType.J48);
+			final TagLineTrainer tlt = new TagLineTrainer(classifierType, options);
 			tlt.train(docs);
 			
 			writeLog(log, "Finished training");
