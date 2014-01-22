@@ -43,7 +43,15 @@ public class Configuration {
 	
 	private static final String SCORE_FILE_IN_DATASET = "score.file.input.dataset";
 	private static final String SCORE_FILE_IN_MODEL = "score.file.input.model";
-	private static final String SCORE_FILE_OUT_DATASET = "score.file.output.dataset";
+	private static final String SCORE_FILE_OUT_DATASET_FEATS = "score.file.output.dataset.features";
+	private static final String SCORE_FILE_OUT_DATASET_SCORED = "score.file.output.dataset.scored";
+	
+	private static final String IDENTIFY_FILE_IN_DATASET = "identify.file.input.dataset";
+	private static final String IDENTIFY_STRUC_SLOTFILLERS = "identify.struc.slotfillers";
+	private static final String IDENTIFY_STRUC_TABLES = "identify.struc.tables";
+	private static final String IDENTIFY_STRUC_USERDEFINED = "identify.struc.userdefined";
+	private static final String IDENTIFY_FILE_OUT_ANNO = "identify.file.output.annotations";
+	
 	
 	private static final String CREATE_FILE_OUT_DATASET = "create.file.output.dataset";
 	private static final String CREATE_CLASSES = "create.classes";
@@ -112,6 +120,18 @@ public class Configuration {
 		return new File(config.getString(EVAL_FILE_OUT_PERF));
 	}
 	
+	public File getIdentifyFileInputDataset() {
+		return new File(config.getString(IDENTIFY_FILE_IN_DATASET));
+	}
+	
+	public File getIdentifyFileOutputAnnotations() {
+		return new File(config.getString(IDENTIFY_FILE_OUT_ANNO));
+	}
+
+	public String[] getIdentifyStructuresUserDefined() {
+		return config.getStringArray(IDENTIFY_STRUC_USERDEFINED);
+	}
+	
 	public File getOutLog() {
 		return new File(config.getString(OUT_LOG));
 	}
@@ -125,9 +145,13 @@ public class Configuration {
 	}
 	
 	public File getScoreFileOutputDataset() {
-		return new File(config.getString(SCORE_FILE_OUT_DATASET));
+		return new File(config.getString(SCORE_FILE_OUT_DATASET_SCORED));
 	}
 	
+	public File getScoreFileOutputDatasetFeatures() {
+		return new File(config.getString(SCORE_FILE_OUT_DATASET_FEATS));
+	}
+
 	public TaskType getTaskType() {
 		return TaskType.fromString(config.getString(TASK_TYPE));
 	}
@@ -150,5 +174,13 @@ public class Configuration {
 		
 	public File getTrainFileOutputModel() {
 		return new File(config.getString(TRAIN_FILE_OUT_MODEL));
-	}		
+	}
+	
+	public boolean isIdentifySlotFillers() {
+		return config.getBoolean(IDENTIFY_STRUC_SLOTFILLERS);
+	}
+	
+	public boolean isIdentifyTables() {
+		return config.getBoolean(IDENTIFY_STRUC_TABLES);
+	}
 }

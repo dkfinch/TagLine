@@ -36,9 +36,9 @@ public class UserDefinedIdentifier extends Identifier {
 		
 		int start = -1;
 		int end = -1;
-		
-		for (Line line : document.getLines()) {			
-			if (line.getPredictedLabel().equalsIgnoreCase(className)) {
+
+		for (Line line : document.getLines()) {
+			if (getLabel(line).equalsIgnoreCase(className)) {
 				if (start == -1) {
 					start = line.getOffset();
 				}

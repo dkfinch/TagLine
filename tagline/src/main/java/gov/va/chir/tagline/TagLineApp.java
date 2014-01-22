@@ -16,15 +16,20 @@
  */
 package gov.va.chir.tagline;
 
-import gov.va.chir.tagline.beans.AnnotationType;
 import gov.va.chir.tagline.beans.ClassifierType;
 import gov.va.chir.tagline.beans.Configuration;
 import gov.va.chir.tagline.beans.Document;
+import gov.va.chir.tagline.structure.Identifier;
+import gov.va.chir.tagline.structure.SlotFillerIdentifier;
+import gov.va.chir.tagline.structure.TableIdentifier;
+import gov.va.chir.tagline.structure.UserDefinedIdentifier;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 
@@ -90,7 +95,7 @@ public class TagLineApp {
 				maxLinesPerDoc, maxLineLength, numClasses, randomSeed);
 		writeLog(log, "Finished");
 	}
-			
+	
 	private void evaluatePerformance(final File log, final File dataset, 
 			final File performance, final ClassifierType classifierType, 
 			final String... options) throws Exception {
@@ -103,7 +108,7 @@ public class TagLineApp {
 		}
 
 		writeLog(log, "Loading input data");
-		Collection<Document> docs = FileDao.loadTrainingLines(dataset,	true);
+		Collection<Document> docs = FileDao.loadLabeledLines(dataset, true);
 		
 		writeLog(log, String.format("Loaded %,d docs", docs.size()));
 		
@@ -116,7 +121,7 @@ public class TagLineApp {
 		
 		writeLog(log, "Finished");
 	}
-	
+			
 	public void execute() throws Exception {
         final File log = config.getOutLog();
         log.delete();
@@ -149,7 +154,8 @@ public class TagLineApp {
         	scoreData(log, 
         			config.getScoreFileInputDataset(),
         			config.getScoreFileInputModel(),
-        			config.getScoreFileOutputDataset());
+        			config.getScoreFileOutputDataset(),
+        			config.getScoreFileOutputDatasetFeatures());
         } else if (taskType == TaskType.TRAIN) {
         	trainClassifier(log,
         			config.getTrainFileInputDataset(),
@@ -157,6 +163,13 @@ public class TagLineApp {
         			config.getTrainFileOutputDataset(),
         			config.getTrainClassifierType(),
         			config.getTrainClassifierOptions());
+        } else if (taskType == TaskType.IDENTIFY) {
+        	identifyStructures(log,
+        			config.getIdentifyFileInputDataset(),
+        			config.getIdentifyFileOutputAnnotations(),
+        			config.isIdentifySlotFillers(),
+        			config.isIdentifyTables(),
+        			config.getIdentifyStructuresUserDefined());
         } else {
         	throw new IllegalArgumentException(
         			String.format("Unsupported task type: %s", taskType));
@@ -166,8 +179,59 @@ public class TagLineApp {
         writeLog(log, String.format("Finishing: %s", new Date().toString()));
 	}
 	
+	private void identifyStructures(final File log, final File dataset, 
+			final File outputAnnotations, final boolean identifySlotFillers,
+			final boolean identifyTables, final String... identifyUserDefined) throws Exception {
+
+		writeLog(log, "Identifying structures");
+		
+		if (dataset == null || outputAnnotations == null) {
+			throw new IllegalArgumentException(
+					"Input dataset and output annotations must not be null");
+		}
+
+		writeLog(log, "Loading input data");
+		Collection<Document> docs = FileDao.loadLabeledLines(dataset, true);
+		
+		writeLog(log, String.format("\tLoaded %,d docs", docs.size()));
+
+		if (docs == null || docs.isEmpty()) {
+			throw new IllegalStateException("Must have at least one document to score");
+		} else {
+			writeLog(log, "Identifying structures");
+			
+			final Set<Identifier> identifiers = new HashSet<Identifier>();
+
+			if (identifySlotFillers) {
+				identifiers.add(new SlotFillerIdentifier());
+			}
+			
+			if (identifyTables) {
+				identifiers.add(new TableIdentifier());
+			}
+			
+			if (identifyUserDefined != null) {
+				for (String iud : identifyUserDefined) {
+					identifiers.add(new UserDefinedIdentifier(iud));
+				}
+			}
+			
+			final AnnotationsSaver as = new AnnotationsSaver(outputAnnotations);
+						
+			for (Document doc : docs) {
+				for (Identifier identifier : identifiers) {
+					identifier.processDocument(doc);
+				}
+				
+				as.saveRecord(doc);
+			}
+		} 
+		
+		writeLog(log, "Finished");
+	}
+	
 	private void scoreData(final File log, final File dataset, 
-			final File modelFile, final File outputDataset) throws Exception {
+			final File modelFile, final File outputDataset, final File outputFeatures) throws Exception {
 
 		writeLog(log, "Scoring data");
 		
@@ -191,18 +255,26 @@ public class TagLineApp {
 					
 			writeLog(log, "Loading classifier");
 			final TagLineScorer tls = new TagLineScorer(model);
-			final Annotator annotator = new Annotator(AnnotationType.values());
 			
 			writeLog(log, "Scoring documents");
-			final DatasetSaver ds = new DatasetSaver(outputDataset);
+			final DatasetScoredSaver dss = new DatasetScoredSaver(outputDataset);
+			
+			DatasetFeatureSaver dfs = null;
+			
+			if (outputFeatures != null) {
+				dfs = new DatasetFeatureSaver(outputFeatures);
+			}
 						
 			for (Document doc : docs) {
 				tls.applyModel(doc);
-				ds.saveRecord(doc);
-				annotator.annotate(doc);
+				
+				dss.saveRecord(doc);
+				
+				if (dfs != null) {
+					dfs.saveRecord(doc);	
+				}
 			}
 		} 
-		// @TODO - what about saving annotations?
 		
 		writeLog(log, "Finished");
 	}
@@ -220,7 +292,7 @@ public class TagLineApp {
 		}
 		
 		writeLog(log, "Loading input data");
-		Collection<Document> docs = FileDao.loadTrainingLines(dataset, true);
+		Collection<Document> docs = FileDao.loadLabeledLines(dataset, true);
 		
 		writeLog(log, String.format("Loaded %,d docs", docs.size()));
 		
@@ -237,7 +309,7 @@ public class TagLineApp {
 			if (outputDataset != null) {
 				writeLog(log, "Saving dataset with features");
 				
-				final DatasetSaver ds = new DatasetSaver(outputDataset);
+				final DatasetFeatureSaver ds = new DatasetFeatureSaver(outputDataset);
 				
 				ds.saveRecords(docs);
 				

@@ -49,4 +49,14 @@ public abstract class Identifier {
 	}
 	
 	protected abstract Set<Annotation> identifyStructures(final Document document);
+	
+	protected String getLabel(final Line line) {
+		String label = line.getPredictedLabel();
+		
+		if (label == null) {
+			label = line.getLabel();
+		}
+		
+		return label;
+	}
 }

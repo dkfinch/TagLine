@@ -20,7 +20,8 @@ public enum TaskType {
 	TRAIN("t"),
 	EVALUATE("e"),
 	SCORE("s"),
-	CREATE("c");
+	CREATE("c"),
+	IDENTIFY("i");
 	
 	public static TaskType fromString(String abbr) {
         if (abbr != null) {

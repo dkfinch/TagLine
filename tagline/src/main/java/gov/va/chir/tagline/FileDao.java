@@ -203,10 +203,55 @@ public class FileDao {
 		return loader.getStructure();
 	}
 	
+	public static Collection<Document> loadLabeledLines(final File file, boolean hasHeader) throws IOException {
+		final Map<String, Map<Integer, Line>> docMap = 
+				new HashMap<String, Map<Integer, Line>>();
+		
+		// Assumes tab-delimited columns. May not be sorted.
+		// Column labels may be on first line
+		// Col 0 = NoteID
+		// Col 1 = LineID
+		// Col 2 = Class
+		// Col 3 = Text
+		final int POS_DOC_ID = 0;
+		final int POS_LINE_ID = 1;
+		final int POS_CLASS = 2;
+		final int POS_TEXT = 3;
+		
+		final List<String> contents = FileUtils.readLines(file);
+		
+		for (int i = (hasHeader ? 1 : 0); i < contents.size(); i++) {
+			final String l = contents.get(i);
+			final String[] array = l.split("\t");
+			
+			if (!docMap.containsKey(array[POS_DOC_ID])) {
+				docMap.put(array[POS_DOC_ID], new TreeMap<Integer, Line>());
+			}
+			
+			int lineId = NumberUtils.toInt(array[POS_LINE_ID]);
+			
+			final Line line = new Line(
+					lineId,
+					array[POS_TEXT], 
+					array[POS_CLASS]);
+			
+			docMap.get(array[POS_DOC_ID]).put(lineId, line);
+		}
+		
+		final Collection<Document> docs = new ArrayList<Document>();
+		
+		for (String docId : docMap.keySet()) {
+			docs.add(new Document(docId, new ArrayList<Line>(
+					docMap.get(docId).values())));
+		}
+		
+		return docs;
+	}
+
 	private static Classifier loadModel(final File file) throws Exception {
 		return (Classifier)SerializationHelper.read(file.getAbsolutePath());
 	}
-
+	
 	public static Collection<Document> loadScoringLines(final File file, boolean hasHeader) throws IOException {
 		final Map<String, Map<Integer, Line>> docMap = 
 				new HashMap<String, Map<Integer, Line>>();
@@ -298,51 +343,6 @@ public class FileDao {
 		zis.close();
 		
 		return model;
-	}
-	
-	public static Collection<Document> loadTrainingLines(final File file, boolean hasHeader) throws IOException {
-		final Map<String, Map<Integer, Line>> docMap = 
-				new HashMap<String, Map<Integer, Line>>();
-		
-		// Assumes tab-delimited columns. May not be sorted.
-		// Column labels may be on first line
-		// Col 0 = NoteID
-		// Col 1 = LineID
-		// Col 2 = Class
-		// Col 3 = Text
-		final int POS_DOC_ID = 0;
-		final int POS_LINE_ID = 1;
-		final int POS_CLASS = 2;
-		final int POS_TEXT = 3;
-		
-		final List<String> contents = FileUtils.readLines(file);
-		
-		for (int i = (hasHeader ? 1 : 0); i < contents.size(); i++) {
-			final String l = contents.get(i);
-			final String[] array = l.split("\t");
-			
-			if (!docMap.containsKey(array[POS_DOC_ID])) {
-				docMap.put(array[POS_DOC_ID], new TreeMap<Integer, Line>());
-			}
-			
-			int lineId = NumberUtils.toInt(array[POS_LINE_ID]);
-			
-			final Line line = new Line(
-					lineId,
-					array[POS_TEXT], 
-					array[POS_CLASS]);
-			
-			docMap.get(array[POS_DOC_ID]).put(lineId, line);
-		}
-		
-		final Collection<Document> docs = new ArrayList<Document>();
-		
-		for (String docId : docMap.keySet()) {
-			docs.add(new Document(docId, new ArrayList<Line>(
-					docMap.get(docId).values())));
-		}
-		
-		return docs;
 	}
 		
 	private static void saveFeatures(final File file, final Collection<Feature> features) throws IOException {
