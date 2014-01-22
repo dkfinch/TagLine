@@ -17,6 +17,7 @@
 package gov.va.chir.tagline;
 
 import gov.va.chir.tagline.beans.Document;
+import gov.va.chir.tagline.dao.DatasetUtil;
 import gov.va.chir.tagline.features.Extractor;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.core.Attribute;

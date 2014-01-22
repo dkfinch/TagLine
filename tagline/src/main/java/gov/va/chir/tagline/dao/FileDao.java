@@ -14,8 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with TagLine.  If not, see <http://www.gnu.org/licenses/>.
  */
-package gov.va.chir.tagline;
+package gov.va.chir.tagline.dao;
 
+import gov.va.chir.tagline.TagLineModel;
 import gov.va.chir.tagline.beans.Document;
 import gov.va.chir.tagline.beans.Line;
 import gov.va.chir.tagline.features.Feature;

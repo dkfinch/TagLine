@@ -18,6 +18,7 @@ package gov.va.chir.tagline;
 
 import gov.va.chir.tagline.beans.ClassifierType;
 import gov.va.chir.tagline.beans.Document;
+import gov.va.chir.tagline.dao.DatasetUtil;
 import gov.va.chir.tagline.features.Extractor;
 import gov.va.chir.tagline.features.Feature;
 

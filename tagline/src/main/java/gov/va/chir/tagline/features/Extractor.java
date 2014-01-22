@@ -16,9 +16,9 @@
  */
 package gov.va.chir.tagline.features;
 
-import gov.va.chir.tagline.FileDao;
 import gov.va.chir.tagline.beans.Document;
 import gov.va.chir.tagline.beans.Line;
+import gov.va.chir.tagline.dao.FileDao;
 import gov.va.chir.tagline.features.document.AvgLineLength;
 import gov.va.chir.tagline.features.document.DocumentCountInstances;
 import gov.va.chir.tagline.features.document.DocumentLength;

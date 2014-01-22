@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with TagLine.  If not, see <http://www.gnu.org/licenses/>.
  */
-package gov.va.chir.tagline;
+package gov.va.chir.tagline.dao;
 
 import gov.va.chir.tagline.beans.Document;
 import gov.va.chir.tagline.beans.Line;
@@ -23,18 +23,26 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
 
-public class DatasetScoredSaver {
+public class DatasetFeatureSaver {
 	private static final String PRED_LABEL = "predicted_label";
-	private static final String TEXT = "text";
+	private static final String PRED_PROB = "predicted_probability";
 	
 	private File file;
+	private Set<String> docFeatures;
+	private Set<String> lineFeatures;
 	private boolean headerWritten;
 	
-	public DatasetScoredSaver(final File file) throws IOException {
+	public DatasetFeatureSaver(final File file) throws IOException {
 		this.file = file;
+		
+		docFeatures = new TreeSet<String>();
+		lineFeatures = new TreeSet<String>();
 		
 		headerWritten = false;		
 	}
@@ -48,10 +56,23 @@ public class DatasetScoredSaver {
 		builder.append(DatasetUtil.LINE_ID);
 		builder.append("\t");
 
-		builder.append(PRED_LABEL);
+		for (String feature : docFeatures) {
+			builder.append(feature);
+			builder.append("\t");
+		}
+
+		for (String feature : lineFeatures) {
+			builder.append(feature);
+			builder.append("\t");
+		}
+
+		builder.append(DatasetUtil.LABEL);
 		builder.append("\t");
-		
-		builder.append(TEXT);
+
+		builder.append(PRED_PROB);
+		builder.append("\t");
+
+		builder.append(PRED_LABEL);
 		builder.append(System.getProperty("line.separator"));
 		
 		FileUtils.writeStringToFile(file, builder.toString(), false);
@@ -70,6 +91,7 @@ public class DatasetScoredSaver {
 
 		// Write first line (if needed)
 		if (!headerWritten) {
+			setupFeatures(documents.iterator().next());
 			saveHeader();
 
 			headerWritten = true;
@@ -78,6 +100,8 @@ public class DatasetScoredSaver {
 		final StringBuilder builder = new StringBuilder();
 		
 		for (Document document : documents) {			
+			final Map<String, Object> docValues = document.getFeatures();
+			
 			for (Line line : document.getLines()) {
 				builder.append(document.getName());
 				builder.append("\t");
@@ -85,14 +109,37 @@ public class DatasetScoredSaver {
 				builder.append(line.getLineId());
 				builder.append("\t");
 
-				builder.append(line.getPredictedLabel());
-				builder.append("\t");
+				for (String feature : docFeatures) {
+					builder.append(docValues.get(feature));
+					builder.append("\t");
+				}
+			
+				final Map<String, Object> lineValues = line.getFeatures();
 				
-				builder.append(line.getText());
-				builder.append(System.getProperty("line.separator"));				
+				for (String feature : lineFeatures) {
+					builder.append(lineValues.get(feature));
+					builder.append("\t");
+				}
+				
+				builder.append(line.getLabel());
+				builder.append("\t");
+
+				builder.append(line.getPredictedProbability());
+				builder.append("\t");
+
+				builder.append(line.getPredictedLabel());
+				builder.append(System.getProperty("line.separator"));
 			}
 		}
 		
 		FileUtils.writeStringToFile(file, builder.toString(), true);
+	}
+	
+	private void setupFeatures(final Document document) {
+		docFeatures.addAll(document.getFeatures().keySet());
+		
+		if (document.getNumLines() > 0) {
+			lineFeatures.addAll(document.getLines().iterator().next().getFeatures().keySet());
+		}
 	}	
 }
