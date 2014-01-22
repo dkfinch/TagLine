@@ -139,7 +139,7 @@ public class DatasetFeatureSaver {
 		docFeatures.addAll(document.getFeatures().keySet());
 		
 		if (document.getNumLines() > 0) {
-			lineFeatures.addAll(document.getLine(0).getFeatures().keySet());
+			lineFeatures.addAll(document.getLines().iterator().next().getFeatures().keySet());
 		}
 	}	
 }

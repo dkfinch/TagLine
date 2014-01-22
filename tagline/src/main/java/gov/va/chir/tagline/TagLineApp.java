@@ -241,7 +241,14 @@ public class TagLineApp {
 		}
 
 		writeLog(log, "Loading input data");
-		Collection<Document> docs = FileDao.loadScoringLines(dataset, true);
+		
+		Collection<Document> docs = null;
+		
+		if (dataset.isDirectory()) {
+			docs = FileDao.loadScoringDocs(dataset);
+		} else {
+			docs = FileDao.loadScoringLines(dataset, true);
+		}
 		
 		writeLog(log, String.format("\tLoaded %,d docs", docs.size()));
 
@@ -305,20 +312,18 @@ public class TagLineApp {
 			
 			writeLog(log, "Finished training");
 			
+			// Save model
+			writeLog(log, "Saving model");
+			FileDao.saveTagLineModel(modelFile, tlt.getTagLineModel());			
+			
 			// Save dataset (optional)
 			if (outputDataset != null) {
 				writeLog(log, "Saving dataset with features");
 				
-				final DatasetFeatureSaver ds = new DatasetFeatureSaver(outputDataset);
+				final DatasetFeatureSaver dfs = new DatasetFeatureSaver(outputDataset);
 				
-				ds.saveRecords(docs);
-				
-//				FileDao.saveDataset(outputDataset, tlt.getInstances());
-			}
-			
-			// Save model
-			writeLog(log, "Saving model");
-			FileDao.saveTagLineModel(modelFile, tlt.getTagLineModel());			
+				dfs.saveRecords(docs);
+			}			
 		}
 		
 		writeLog(log, "Finished");

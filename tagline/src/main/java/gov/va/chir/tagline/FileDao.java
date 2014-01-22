@@ -234,7 +234,7 @@ public class FileDao {
 					lineId,
 					array[POS_TEXT], 
 					array[POS_CLASS]);
-			
+
 			docMap.get(array[POS_DOC_ID]).put(lineId, line);
 		}
 		
@@ -250,6 +250,23 @@ public class FileDao {
 
 	private static Classifier loadModel(final File file) throws Exception {
 		return (Classifier)SerializationHelper.read(file.getAbsolutePath());
+	}
+	
+	public static Collection<Document> loadScoringDocs(final File dir) throws IOException {
+		final Collection<Document> docs = new ArrayList<Document>();
+		
+		if (dir == null) {
+			throw new IllegalArgumentException("Directory must not be null");
+		}
+		
+		final Collection<File> files = FileUtils.listFiles(dir, null, false);
+		
+		for (File file : files) {
+			docs.add(new Document(file.getName(), 
+					FileUtils.readFileToString(file)));
+		}
+		
+		return docs;
 	}
 	
 	public static Collection<Document> loadScoringLines(final File file, boolean hasHeader) throws IOException {
