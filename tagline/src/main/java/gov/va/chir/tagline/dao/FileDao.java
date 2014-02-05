@@ -231,9 +231,8 @@ public class FileDao {
 			
 			int lineId = NumberUtils.toInt(array[POS_LINE_ID]);
 			
-			final Line line = new Line(
-					lineId,
-					array[POS_TEXT], 
+			final Line line = new Line(lineId, 
+					(array.length == POS_TEXT ? "" : array[POS_TEXT]), // blank lines have no content 
 					array[POS_CLASS]);
 
 			docMap.get(array[POS_DOC_ID]).put(lineId, line);
