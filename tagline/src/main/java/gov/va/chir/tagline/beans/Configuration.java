@@ -45,13 +45,17 @@ public class Configuration {
 	private static final String SCORE_FILE_IN_MODEL = "score.file.input.model";
 	private static final String SCORE_FILE_OUT_DATASET_FEATS = "score.file.output.dataset.features";
 	private static final String SCORE_FILE_OUT_DATASET_SCORED = "score.file.output.dataset.scored";
-	
-	private static final String IDENTIFY_FILE_IN_DATASET = "identify.file.input.dataset";
+	private static final String IDENTIFY_STRUC_CHECKBOXES = "identify.struc.checkboxes";
+	private static final String IDENTIFY_STRUC_FREETEXT = "identify.struc.freetext";
+	private static final String IDENTIFY_STRUC_LISTS = "identify.struc.lists";
+	private static final String IDENTIFY_STRUC_MEDS = "identify.struc.medications";
+	private static final String IDENTIFY_STRUC_QUESTIONS = "identify.struc.questions";
 	private static final String IDENTIFY_STRUC_SLOTFILLERS = "identify.struc.slotfillers";
 	private static final String IDENTIFY_STRUC_TABLES = "identify.struc.tables";
+	private static final String IDENTIFY_STRUC_VITALS = "identify.struc.vitals";	
+	private static final String IDENTIFY_FILE_IN_DATASET = "identify.file.input.dataset";
 	private static final String IDENTIFY_STRUC_USERDEFINED = "identify.struc.userdefined";
 	private static final String IDENTIFY_FILE_OUT_ANNO = "identify.file.output.annotations";
-	
 	
 	private static final String CREATE_FILE_OUT_DATASET = "create.file.output.dataset";
 	private static final String CREATE_CLASSES = "create.classes";
@@ -176,11 +180,35 @@ public class Configuration {
 		return new File(config.getString(TRAIN_FILE_OUT_MODEL));
 	}
 	
+	public boolean isIdentifyCheckboxes() {
+		return config.getBoolean(IDENTIFY_STRUC_CHECKBOXES);
+	}
+	
+	public boolean isIdentifyFreeText() {
+		return config.getBoolean(IDENTIFY_STRUC_FREETEXT);
+	}
+	
+	public boolean isIdentifyLists() {
+		return config.getBoolean(IDENTIFY_STRUC_LISTS);
+	}
+	
+	public boolean isIdentifyMedications() {
+		return config.getBoolean(IDENTIFY_STRUC_MEDS);
+	}
+	
+	public boolean isIdentifyQuestions() {
+		return config.getBoolean(IDENTIFY_STRUC_QUESTIONS);
+	}
+	
 	public boolean isIdentifySlotFillers() {
 		return config.getBoolean(IDENTIFY_STRUC_SLOTFILLERS);
 	}
 	
 	public boolean isIdentifyTables() {
 		return config.getBoolean(IDENTIFY_STRUC_TABLES);
+	}
+	
+	public boolean isIdentifyVitals() {
+		return config.getBoolean(IDENTIFY_STRUC_VITALS);
 	}
 }

@@ -57,7 +57,7 @@ public class ListIdentifier extends Identifier{
 			thisLineText = thisLine.getText();
 			
 		
-			if (thisLine.getPredictedLabel().equalsIgnoreCase("LHE")) {
+			if (getLabel(thisLine).equalsIgnoreCase("LHE")) {
 				
 				
 				

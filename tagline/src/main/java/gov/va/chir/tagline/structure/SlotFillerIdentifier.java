@@ -91,7 +91,7 @@ public class SlotFillerIdentifier extends Identifier {
 			final Line thisLine = lines.get(i);
 			thisLineText = thisLine.getText();
 			
-			if (thisLine.getPredictedLabel().equalsIgnoreCase("SLV")) {
+			if (getLabel(thisLine).equalsIgnoreCase("SLV")) {
 				colonPosition = thisLineText.indexOf(":");
 				slot = thisLineText.substring(0, colonPosition);
 				slot = slot.trim();

@@ -53,7 +53,7 @@ public class TableIdentifier extends Identifier {
 			thisLineText = thisLine.getText();
 			
 		
-			if (thisLine.getPredictedLabel().equalsIgnoreCase("THE")) {
+			if (getLabel(thisLine).equalsIgnoreCase("THE")) {
 				if (inTable == true){
 					if (tableEnd > -1){
 						annotations.add(new Annotation("Table", tableStart, tableEnd));
@@ -69,7 +69,7 @@ public class TableIdentifier extends Identifier {
 					tableEnd = -1;
 				}
 			}
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("CLA")){
+			else if (getLabel(thisLine).equalsIgnoreCase("CLA")){
 				if (inTable == true){
 					if (tableEnd > -1){
 						annotations.add(new Annotation("Table", tableStart, tableEnd));
@@ -97,7 +97,7 @@ public class TableIdentifier extends Identifier {
 					}
 				}
 			}
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("TBI")){
+			else if (getLabel(thisLine).equalsIgnoreCase("TBI")){
 				if (inTable == true){
 					thisWorkingText = thisLineText.trim();
 					tableEnd = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText) + thisLineText.length();

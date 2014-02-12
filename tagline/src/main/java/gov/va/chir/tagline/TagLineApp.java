@@ -23,10 +23,16 @@ import gov.va.chir.tagline.dao.AnnotationsSaver;
 import gov.va.chir.tagline.dao.DatasetFeatureSaver;
 import gov.va.chir.tagline.dao.DatasetScoredSaver;
 import gov.va.chir.tagline.dao.FileDao;
+import gov.va.chir.tagline.structure.CheckBoxIdentifier;
+import gov.va.chir.tagline.structure.FreeTextIdentifier;
 import gov.va.chir.tagline.structure.Identifier;
+import gov.va.chir.tagline.structure.ListIdentifier;
+import gov.va.chir.tagline.structure.MedsIdentifier;
+import gov.va.chir.tagline.structure.QuestionIdentifier;
 import gov.va.chir.tagline.structure.SlotFillerIdentifier;
 import gov.va.chir.tagline.structure.TableIdentifier;
 import gov.va.chir.tagline.structure.UserDefinedIdentifier;
+import gov.va.chir.tagline.structure.VitalsIdentifier;
 
 import java.io.File;
 import java.io.IOException;
@@ -171,8 +177,14 @@ public class TagLineApp {
         	identifyStructures(log,
         			config.getIdentifyFileInputDataset(),
         			config.getIdentifyFileOutputAnnotations(),
+        			config.isIdentifyCheckboxes(),
+        			config.isIdentifyFreeText(),
+        			config.isIdentifyLists(),
+        			config.isIdentifyMedications(),
+        			config.isIdentifyQuestions(),
         			config.isIdentifySlotFillers(),
         			config.isIdentifyTables(),
+        			config.isIdentifyVitals(),
         			config.getIdentifyStructuresUserDefined());
         } else {
         	throw new IllegalArgumentException(
@@ -184,8 +196,11 @@ public class TagLineApp {
 	}
 	
 	private void identifyStructures(final File log, final File dataset, 
-			final File outputAnnotations, final boolean identifySlotFillers,
-			final boolean identifyTables, final String... identifyUserDefined) throws Exception {
+			final File outputAnnotations, final boolean identifyCheckboxes,
+			final boolean identifyFreeText, final boolean identifyLists,
+			final boolean identifyMedications, final boolean identifyQuestions,
+			final boolean identifySlotFillers, final boolean identifyTables, 
+			final boolean identifyVitals, final String... identifyUserDefined) throws Exception {
 
 		writeLog(log, "Identifying structures");
 		
@@ -206,12 +221,36 @@ public class TagLineApp {
 			
 			final Set<Identifier> identifiers = new HashSet<Identifier>();
 
+			if (identifyCheckboxes) {
+				identifiers.add(new CheckBoxIdentifier());
+			}
+			
+			if (identifyFreeText) {
+				identifiers.add(new FreeTextIdentifier());
+			}
+			
+			if (identifyLists) {
+				identifiers.add(new ListIdentifier());
+			}
+			
+			if (identifyMedications) {
+				identifiers.add(new MedsIdentifier());
+			}
+			
+			if (identifyQuestions) {
+				identifiers.add(new QuestionIdentifier());
+			}			
+			
 			if (identifySlotFillers) {
 				identifiers.add(new SlotFillerIdentifier());
 			}
 			
 			if (identifyTables) {
 				identifiers.add(new TableIdentifier());
+			}
+			
+			if (identifyVitals) {
+				identifiers.add(new VitalsIdentifier());
 			}
 			
 			if (identifyUserDefined != null) {
