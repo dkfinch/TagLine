@@ -35,11 +35,11 @@ import gate.creole.metadata.CreoleResource;
 import gate.creole.metadata.Optional;
 import gate.creole.metadata.RunTime;
 import gate.util.InvalidOffsetException;
-import gov.va.chir.tagline.FileDao;
 import gov.va.chir.tagline.TagLineModel;
 import gov.va.chir.tagline.TagLineScorer;
 import gov.va.chir.tagline.beans.Document;
 import gov.va.chir.tagline.beans.Line;
+import gov.va.chir.tagline.dao.FileDao;
 
 @CreoleResource(name = "TagLine Line Classifier", comment = "Comment goes here")
 public class LineClassifier extends AbstractLanguageAnalyser {
