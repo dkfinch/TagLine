@@ -33,14 +33,19 @@ public class SlotFillerIdentifier extends Identifier {
 		for (int i = 0; i < 15; i++) {
 			
 			String text = line;
+			text = text.trim();
 			gap = gap.substring(1);
 			int occurences = 0;
 			int index = text.indexOf(gap);
-			while (index > 0) {
+			while (index > -1) {
 				
 				index = text.indexOf(gap);
-				occurences++;
-				text = text.substring(index);
+				
+				if (index > -1){
+					occurences++;
+					text = text.substring(index);
+					text = text.trim();
+				}
 			}
 			if (occurences >= count){
 				break;
@@ -65,15 +70,16 @@ public class SlotFillerIdentifier extends Identifier {
 			int fillStart = -1;
 			int fillEnd = -1;
 			int gapPosition = -1;
-			int colonPosition = -1;
-			int hyphenPosition = -1;
 			int refPosition = -1;
+			int hyphenPosition = -1;
+			//int refPosition = -1;
 			int headerStart = -1;
 			int headerEnd = -1;
-			String thisLineText = "";
+			//String thisLineText = "";
 			String thisWorkingText = "";
 			String nextWorkingText = "";
-			String nextLineText = "";
+			//String nextLineText = "";
+			//String lastLineText = "";
 			String header = "";
 			String gap = "";
 			String slot = "";
@@ -85,474 +91,532 @@ public class SlotFillerIdentifier extends Identifier {
 			String slotFiller = "";
 			String slotFiller2 = "";
 			String slotFiller3 = "";
+			String thisClass = "";
+			String nextClass = "";
+			String lastClass = "";
+			
 			
 			
 			
 			final Line thisLine = lines.get(i);
-			thisLineText = thisLine.getText();
+			final String thisLineText = thisLine.getText();
+			thisClass = getLabel(thisLine);
 			
-			if (getLabel(thisLine).equalsIgnoreCase("SLV")) {
-				colonPosition = thisLineText.indexOf(":");
-				slot = thisLineText.substring(0, colonPosition);
-				slot = slot.trim();
-				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
-				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = thisLineText.substring(colonPosition, 0);
-				filler = filler.trim();
-				fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-				fillEnd = thisLine.getOffset() + fillStart + filler.length();
-				annotations.add(new Annotation("Filler", fillStart, fillEnd));
-				annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
+			if (i+1 < lines.size()){
+				final Line nextLine = lines.get(i+1);
+				final String nextLineText = nextLine.getText();
+				nextClass = getLabel(nextLine);
 			}
 			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("SLT")) {
-				colonPosition = thisLineText.indexOf(":");
-				slot = thisLineText.substring(0, colonPosition);
+			if (i-1 >= 0){
+				final Line lastLine = lines.get(i-1);
+				final String lastLineText = lastLine.getText();
+				lastClass = getLabel(lastLine);
+			}
+			else{lastClass = "XXX";}
+			
+			System.out.println(thisClass + " " + thisLineText);
+			
+			
+			if (thisClass.equalsIgnoreCase("SLV")) {
+				refPosition = thisLineText.indexOf(":");
+				if (refPosition > -1){
+				slot = thisLineText.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				
-				if (i <= lines.size()){
-					final Line nextLine = lines.get(i + 1);
-					if (nextLine.getPredictedLabel().equalsIgnoreCase("FRT")) {
-						nextLineText = nextLine.getText();
-						fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-						fillEnd = thisLine.getOffset() + fillStart + filler.length();
-						annotations.add(new Annotation("Slot", slotStart, slotEnd));
-						annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
+				filler = thisLineText.substring(refPosition);
+				filler = filler.trim();
+				if (filler.length()> 0){
+				fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
+				fillEnd = fillStart + filler.length();
+				annotations.add(new Annotation("Filler", fillStart, fillEnd));
+				annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));}}
+			}
+			
+			else if (thisClass.equalsIgnoreCase("SLT")) {
+				refPosition = thisLineText.indexOf(":");
+				if (refPosition > -1){
+				slot = thisLineText.substring(0, refPosition);
+				slot = slot.trim();
+				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
+				slotEnd = slotStart + slot.length();
+				annotations.add(new Annotation("Slot", slotStart, slotEnd));
+				if (nextClass.equalsIgnoreCase("FRT")) {
+					Line nextLine = lines.get(i+1);
+					String nextLineText = nextLine.getText();
+					filler = nextLineText.trim();
+					fillStart = nextLineText.indexOf(filler);
+					fillEnd = fillStart + filler.length();
+					annotations.add(new Annotation("Filler", fillStart, fillEnd));
+					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));}
 					}
 						
 				}
-			}
-			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("NSL")) {
+
+			else if (thisClass.equalsIgnoreCase("NSL")) {
 				refPosition = thisLineText.indexOf(".");
-				if (refPosition == -1){
+				if (refPosition < 0){
 					refPosition  = thisLineText.indexOf(")");
 				}
-				thisLineText = thisLineText.substring(refPosition);
-				colonPosition = thisLineText.indexOf(":");
-				slot = thisLineText.substring(0, colonPosition);
+				if (refPosition > -1){
+				thisWorkingText = thisLineText.substring(refPosition);
+				refPosition = thisWorkingText.indexOf(":");
+				slot = thisWorkingText.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
+				}
 			}
 			
 
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("SHV")) {
-				hyphenPosition = thisLineText.indexOf("-");
-				slot = thisLineText.substring(0, hyphenPosition);
+			else if (thisClass.equalsIgnoreCase("SHV")) {
+				refPosition = thisLineText.indexOf("-");
+				if (refPosition > -1){
+				slot = thisLineText.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = thisLineText.substring(hyphenPosition, 0);
+				filler = thisLineText.substring(refPosition);
 				filler = filler.trim();
 				fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-				fillEnd = thisLine.getOffset() + fillStart + filler.length();
+				fillEnd = fillStart + filler.length();
 				annotations.add(new Annotation("Filler", fillStart, fillEnd));
 				annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
+				}
 				
 			}
 			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("HSV")) {
-				colonPosition = thisLineText.indexOf(":");
-				header = thisLineText.substring(0, colonPosition);
+			else if (thisClass.equalsIgnoreCase("HSV")) {
+				refPosition = thisLineText.indexOf(":");
+				if (refPosition > -1){
+				header = thisLineText.substring(0, refPosition);
 				header = header.trim();
 				headerStart = thisLine.getOffset() + thisLineText.indexOf(header);
-				headerEnd = thisLine.getOffset() + headerStart + header.length();
-				annotations.add(new Annotation("Filler", fillStart, fillEnd));
-				thisLineText = thisLineText.substring(colonPosition);
-				colonPosition = thisLineText.indexOf(":");
-				slot = thisLineText.substring(0, colonPosition);
+				headerEnd = headerStart + header.length();
+				annotations.add(new Annotation("Header2", headerStart, headerEnd));
+				thisWorkingText = thisLineText.substring(refPosition);
+				refPosition = thisWorkingText.indexOf(":");
+				if (refPosition > -1){
+				slot = thisWorkingText.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = thisLineText.substring(colonPosition, 0);
+				filler = thisWorkingText.substring(refPosition);
 				filler = filler.trim();
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
-					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
+					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));}}
 				}
 			}
 			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("HDS")) {
-				colonPosition = thisLineText.indexOf(":");
-				header = thisLineText.substring(0, colonPosition);
+			else if (thisClass.equalsIgnoreCase("HDS")) {
+				refPosition = thisLineText.indexOf(":");
+				if (refPosition > -1){
+				header = thisLineText.substring(0, refPosition);
 				header = header.trim();
 				headerStart = thisLine.getOffset() + thisLineText.indexOf(header);
-				headerEnd = thisLine.getOffset() + header.length();
-				annotations.add(new Annotation("Filler", fillStart, fillEnd));
-				thisWorkingText = thisLineText.substring(colonPosition);
+				headerEnd = headerStart + header.length();
+				annotations.add(new Annotation("Header3", headerStart, headerEnd));
+				thisWorkingText = thisLineText.substring(refPosition);
 				gap = getLargestGap(thisWorkingText, 1);
-				gapPosition = thisWorkingText.indexOf(gap);
-				slotFiller = thisWorkingText.substring(0, gapPosition);
-				slotFiller2 = thisWorkingText.substring(gapPosition, 0);
-				colonPosition = slotFiller.indexOf(":");
-				slot = slotFiller.substring(0, colonPosition);
+				refPosition = thisWorkingText.indexOf(gap);
+				if (refPosition > -1){
+				slotFiller = thisWorkingText.substring(0, refPosition);
+				slotFiller2 = thisWorkingText.substring(refPosition);
+				refPosition = slotFiller.indexOf(":");
+				if (refPosition > -1){
+				slot = slotFiller.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = slotFiller.substring(colonPosition, 0);
+				filler = slotFiller.substring(refPosition, 0);
 				filler = filler.trim();
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
 					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
 				}
-				colonPosition = slotFiller2.indexOf(":");
-				slot = slotFiller2.substring(0, colonPosition);
+				refPosition = slotFiller2.indexOf(":");
+				if (refPosition > -1){
+				slot = slotFiller2.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = slotFiller2.substring(colonPosition, 0);
+				filler = slotFiller2.substring(refPosition);
 				filler = filler.trim();
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
-					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
+					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));}}}}
 				}
 			}
 			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("HDV")) {
-				colonPosition = thisLineText.indexOf(":");
-				header = thisLineText.substring(0, colonPosition);
+			else if (thisClass.equalsIgnoreCase("HDV")) {
+				refPosition = thisLineText.indexOf(":");
+				if (refPosition > -1){
+				header = thisLineText.substring(0, refPosition);
 				header = header.trim();
 				headerStart = thisLine.getOffset() + thisLineText.indexOf(header);
-				headerEnd = thisLine.getOffset() + header.length();
-				annotations.add(new Annotation("Filler", fillStart, fillEnd));
-				thisWorkingText = thisLineText.substring(colonPosition);
-				gapPosition = thisWorkingText.indexOf("  ");
-				slotFiller = thisWorkingText.substring(0, gapPosition);
-				slotFiller2 = thisWorkingText.substring(gapPosition, 0);
-				colonPosition = slotFiller.indexOf(":");
-				slot = slotFiller.substring(0, colonPosition);
+				headerEnd = headerStart + header.length();
+				annotations.add(new Annotation("Header4", headerStart, headerEnd));
+				thisWorkingText = thisLineText.substring(refPosition);
+				thisWorkingText = thisLineText.trim();
+				gap = getLargestGap(thisWorkingText, 1);
+				refPosition = thisWorkingText.indexOf(gap);
+				if (refPosition > -1){
+				slotFiller = thisWorkingText.substring(0, refPosition);
+				slotFiller2 = thisWorkingText.substring(refPosition);
+				refPosition = slotFiller.indexOf(":");
+				if (refPosition > -1){
+				slot = slotFiller.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = slotFiller.substring(colonPosition, 0);
-				filler = filler.trim();
+				filler = slotFiller.substring(refPosition);
+				filler = filler.trim();}
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
 					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
 				}
 				
-				colonPosition = slotFiller2.indexOf(":");
-				slot = slotFiller2.substring(0, colonPosition);
+				refPosition = slotFiller2.indexOf(":");
+				if (refPosition > -1){
+				slot = slotFiller2.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
 				slotEnd = thisLine.getOffset() + slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = slotFiller2.substring(colonPosition, 0);
+				filler = slotFiller2.substring(refPosition);
 				filler = filler.trim();
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
-					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
+					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));}}}
 				}
 			}
 			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("LDS")) {
-				gapPosition = thisLineText.indexOf("  ");
-				header = thisLineText.substring(0, gapPosition);
+			else if (thisClass.equalsIgnoreCase("LDS")) {
+				thisWorkingText = thisLineText.trim();
+				refPosition = thisWorkingText.indexOf("  ");
+				if (refPosition > -1){
+				header = thisWorkingText.substring(0, refPosition);
 				header = header.trim();
 				headerStart = thisLine.getOffset() + thisLineText.indexOf(header);
-				headerEnd = thisLine.getOffset() + header.length();
-				annotations.add(new Annotation("Filler", fillStart, fillEnd));
-				thisWorkingText = thisLineText.substring(gapPosition);
-				gapPosition = thisWorkingText.indexOf("  ");
-				slotFiller = thisWorkingText.substring(0, gapPosition);
-				slotFiller2 = thisWorkingText.substring(gapPosition, 0);
-				colonPosition = slotFiller.indexOf(":");
-				slot = slotFiller.substring(0, colonPosition);
+				headerEnd = headerStart + header.length();
+				annotations.add(new Annotation("Header5", headerStart, headerEnd));
+				thisWorkingText = thisWorkingText.substring(refPosition);
+				thisWorkingText = thisWorkingText.trim();
+				gap = getLargestGap(thisWorkingText, 1);
+				refPosition = thisWorkingText.indexOf(gap);
+				if (refPosition > -1){
+				slotFiller = thisWorkingText.substring(0, refPosition);
+				slotFiller2 = thisWorkingText.substring(refPosition);
+				refPosition = slotFiller.indexOf(":");
+				slot = slotFiller.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = slotFiller.substring(colonPosition, 0);
+				filler = slotFiller.substring(refPosition);
 				filler = filler.trim();
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() +fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
 					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
 				}
 				
-				colonPosition = slotFiller2.indexOf(":");
-				slot = slotFiller2.substring(0, colonPosition);
+				refPosition = slotFiller2.indexOf(":");
+				if (refPosition > -1){
+				slot = slotFiller2.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = slotFiller2.substring(colonPosition, 0);
+				filler = slotFiller2.substring(refPosition);
 				filler = filler.trim();
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
-					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
+					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));}}}
 				}
 			}
 				
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("SVV")) {
-				colonPosition = thisLineText.indexOf(":");
-				header = thisLineText.substring(0, colonPosition);
+			else if (thisClass.equalsIgnoreCase("SVV")) {
+				refPosition = thisLineText.indexOf(":");
+				if (refPosition > -1){
+				header = thisLineText.substring(0, refPosition);
 				header = header.trim();
 				headerStart = thisLine.getOffset() + thisLineText.indexOf(header);
-				headerEnd = thisLine.getOffset() + header.length();
-				annotations.add(new Annotation("Filler", fillStart, fillEnd));
-				thisLineText = thisLineText.substring(colonPosition);
-				thisLineText = thisLineText.trim();
-				gapPosition = thisLineText.indexOf("   ");
-				slot = thisLineText.substring(0, gapPosition);
+				headerEnd = headerStart + header.length();
+				annotations.add(new Annotation("Header6", headerStart, headerEnd));
+				thisWorkingText = thisLineText.substring(refPosition);
+				thisWorkingText = thisWorkingText.trim();
+				refPosition = thisWorkingText.indexOf("   ");
+				if (refPosition > -1){
+				slot = thisWorkingText.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = thisLineText.substring(gapPosition, 0);
+				filler = thisWorkingText.substring(refPosition);
 				filler = filler.trim();
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
-					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
+					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));}}
 				}
 			}
 			
 			
 			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("NSS")) {
+			else if (thisClass.equalsIgnoreCase("NSS")) {
 				refPosition = thisLineText.indexOf(".");
 				if (refPosition == -1){
-					refPosition  = thisLineText.indexOf(")");
-				}
-				thisLineText = thisLineText.substring(refPosition);
-				colonPosition = thisLineText.indexOf(":");
-				slot = thisLineText.substring(0, colonPosition);
+					refPosition  = thisLineText.indexOf(")");}
+				if (refPosition > -1){
+				thisWorkingText = thisLineText.substring(refPosition);
+				refPosition = thisWorkingText.indexOf(":");
+				if (refPosition > -1){
+				slot = thisWorkingText.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				refPosition = thisLineText.indexOf(".");
+				refPosition = thisWorkingText.indexOf(".");
 				if (refPosition > 0){
-					filler = thisLineText.substring(colonPosition, 0);
+					filler = thisWorkingText.substring(refPosition, 0);
 					filler = filler.trim();
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
 					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
 				}
 				else{
-					final Line nextLine = lines.get(i +1);
-					nextLineText = nextLine.getText();
-					refPosition = thisLineText.indexOf(".");
-					filler = thisLineText.substring(colonPosition, 0);
+					refPosition = thisWorkingText.indexOf(".");
+					filler = thisWorkingText.substring(0, refPosition);
 					filler = filler.trim();
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
-					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
+					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));}}
 				}
 			}
 				
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("NSV")) {
+			else if (thisClass.equalsIgnoreCase("NSV")) {
 				refPosition = thisLineText.indexOf(".");
 				if (refPosition == -1){
-					refPosition  = thisLineText.indexOf(")");
-				}
+					refPosition  = thisLineText.indexOf(")");}
 				if (refPosition == -1){
-					refPosition  = thisLineText.indexOf("]");
-				}
-				thisLineText = thisLineText.substring(refPosition);
-				colonPosition = thisLineText.indexOf(":");
-				slot = thisLineText.substring(0, colonPosition);
+					refPosition  = thisLineText.indexOf("]");}
+				if (refPosition > -1){
+				thisWorkingText = thisLineText.substring(refPosition);
+				refPosition = thisWorkingText.indexOf(":");}
+				if (refPosition > -1){
+				slot = thisWorkingText.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				refPosition = thisLineText.indexOf(".");
-				filler = thisLineText.substring(colonPosition, 0);
-				filler = filler.trim();
+				filler = thisWorkingText.substring(refPosition);
+				filler = filler.trim();	
 				fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-				fillEnd = thisLine.getOffset() + fillStart + filler.length();
+				fillEnd = fillStart + filler.length();
 				annotations.add(new Annotation("Filler", fillStart, fillEnd));
-				annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
+				annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));}
 			}
 	
-
-			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("DSL")) {
-				colonPosition = thisLineText.indexOf(":");
-				slot = thisLineText.substring(0, colonPosition);
+			else if (thisClass.equalsIgnoreCase("DSL")) {
+				refPosition = thisLineText.indexOf(":");
+				if (refPosition > -1){
+				slot = thisLineText.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
 				slotEnd = thisLine.getOffset() + slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = thisLineText.substring(colonPosition, 0);
+				filler = thisLineText.substring(refPosition, 0);
 				filler = filler.trim();
 				fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-				fillEnd = thisLine.getOffset() + fillStart + filler.length();
+				fillEnd = fillStart + filler.length();
 				annotations.add(new Annotation("Date", fillStart, fillEnd));
-				annotations.add(new Annotation("SlotDate", slotStart, fillEnd));
+				annotations.add(new Annotation("SlotDate", slotStart, fillEnd));}
 			}
 			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("DTH")) {
-				colonPosition = thisLineText.indexOf(":");
-				slot = thisLineText.substring(0, colonPosition);
+			else if (thisClass.equalsIgnoreCase("DTH")) {
+				refPosition = thisLineText.indexOf(":");
+				if (refPosition > -1){
+				slot = thisLineText.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = thisLineText.substring(colonPosition, 0);
+				filler = thisLineText.substring(refPosition);
 				filler = filler.trim();
 				fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-				fillEnd = thisLine.getOffset() + fillStart + filler.length();
+				fillEnd = fillStart + filler.length();
 				annotations.add(new Annotation("Date", fillStart, fillEnd));
-				annotations.add(new Annotation("SlotDate", slotStart, fillEnd));
+				annotations.add(new Annotation("SlotDate", slotStart, fillEnd));}
 			}
 			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("DTV")) {
+			else if (thisClass.equalsIgnoreCase("DTV")) {
 				gap = getLargestGap(thisLineText, 1);
-				gapPosition = thisLineText.indexOf(gap);
-				slot = thisLineText.substring(0, gapPosition);
+				refPosition = thisLineText.indexOf(gap);
+				if (refPosition > -1){
+				slot = thisLineText.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Date", slotStart, slotEnd));
-				filler = thisLineText.substring(gapPosition, 0);
+				filler = thisLineText.substring(refPosition);
 				filler = filler.trim();
 				fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-				fillEnd = thisLine.getOffset() + fillStart + filler.length();
+				fillEnd = fillStart + filler.length();
 				annotations.add(new Annotation("Event", fillStart, fillEnd));
-				annotations.add(new Annotation("SlotDate", slotStart, fillEnd));	
+				annotations.add(new Annotation("SlotDate", slotStart, fillEnd));}
 			}
 				
 			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("DKV")) {
+			else if (thisClass.equalsIgnoreCase("DKV")) {
 				gap = getLargestGap(thisLineText, 1);
-				gapPosition = thisLineText.indexOf(gap);
-				header = thisLineText.substring(0, gapPosition);
+				refPosition = thisLineText.indexOf(gap);
+				if (refPosition > -1){
+				header = thisLineText.substring(0, refPosition);
 				header = header.trim();
 				headerStart = thisLine.getOffset() + thisLineText.indexOf(header);
-				headerEnd = thisLine.getOffset() + header.length();
-				annotations.add(new Annotation("Date", fillStart, fillEnd));
-				thisLineText = thisLineText.substring(colonPosition);
-				colonPosition = thisLineText.indexOf(":");
-				slot = thisLineText.substring(0, colonPosition);
+				headerEnd = headerStart + header.length();
+				annotations.add(new Annotation("Date", headerStart, headerEnd));
+				thisWorkingText = thisLineText.substring(refPosition);
+				refPosition = thisWorkingText.indexOf(":");
+				if (refPosition > -1){
+				slot = thisWorkingText.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = thisLineText.substring(colonPosition, 0);
-				filler = filler.trim();
+				filler = thisLineText.substring(refPosition);
+				filler = filler.trim();}
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
-					annotations.add(new Annotation("DateSlotFiller", headerStart, fillEnd));
+					annotations.add(new Annotation("DateSlotFiller", headerStart, fillEnd));}
 				}
 			}
 			
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("DSV")) {
+			else if (thisClass.equalsIgnoreCase("DSV")) {
 				thisWorkingText = thisLineText.trim();
 				gap = getLargestGap(thisWorkingText, 1);
-				gapPosition = thisLineText.indexOf(gap);
-				slotFiller = thisLineText.substring(0, gapPosition);
-				slotFiller2 = thisLineText.substring(gapPosition, 0);
-				colonPosition = slotFiller.indexOf(":");
-				slot = slotFiller.substring(0, colonPosition);
+				refPosition = thisWorkingText.indexOf(gap);
+				if (refPosition > -1){
+				slotFiller = thisWorkingText.substring(0, refPosition);
+				slotFiller2 = thisWorkingText.substring(refPosition);
+				refPosition = slotFiller.indexOf(":");
+				if (refPosition <0){
+					refPosition = slotFiller.indexOf(". ");}
+				if (refPosition > -1){
+				slot = slotFiller.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = slotFiller.substring(colonPosition, 0);
-				filler = filler.trim();
+				filler = slotFiller.substring(refPosition);
+				filler = filler.trim();}
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
 					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
 				}
-				colonPosition = slotFiller2.indexOf(":");
-				slot = slotFiller2.substring(0, colonPosition);
+				refPosition = slotFiller2.indexOf(":");
+				if (refPosition > -1){
+				slot = slotFiller2.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = slotFiller2.substring(colonPosition, 0);
-				filler = filler.trim();
+				filler = slotFiller2.substring(refPosition);
+				filler = filler.trim();}
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
-					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));				
+					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));}		
 				}	
 			}
 				
-			else if (thisLine.getPredictedLabel().equalsIgnoreCase("TSV")) {
+			else if (thisClass.equalsIgnoreCase("TSV")) {
 				thisWorkingText = thisLineText.trim();
-				gap = getLargestGap(thisWorkingText, 1);
-				gapPosition = thisLineText.indexOf(gap);
-				slotFiller = thisLineText.substring(0, gapPosition);
-				thisWorkingText = thisLineText.substring(gapPosition, 0);
-				colonPosition = slotFiller.indexOf(":");
-				slot = slotFiller.substring(0, colonPosition);
+				gap = getLargestGap(thisWorkingText, 2);
+				refPosition = thisWorkingText.indexOf(gap);
+				if (refPosition > -1){
+				slotFiller = thisWorkingText.substring(0, refPosition);
+				thisWorkingText = thisWorkingText.substring(refPosition);
+				thisWorkingText = thisWorkingText.trim();
+				refPosition = slotFiller.indexOf(":");
+				if (refPosition > -1){
+				slot = slotFiller.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = slotFiller.substring(colonPosition, 0);
+				filler = slotFiller.substring(refPosition);
 				filler = filler.trim();
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
 					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
 				}
-				gapPosition = thisWorkingText.indexOf(gap);
-				slotFiller2 = thisWorkingText.substring(0, gapPosition);
-				slotFiller3 = thisWorkingText.substring(gapPosition, 0);
-				colonPosition = slotFiller2.indexOf(":");
-				slot = slotFiller2.substring(0, colonPosition);
+				refPosition = thisWorkingText.indexOf(gap);
+				if (refPosition > -1){
+				slotFiller2 = thisWorkingText.substring(0, refPosition);
+				slotFiller3 = thisWorkingText.substring(refPosition);
+				refPosition = slotFiller2.indexOf(":");
+				if (refPosition > -1){
+				slot = slotFiller2.substring(0, refPosition);
 				slot = slot.trim();
 				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = slotFiller2.substring(colonPosition, 0);
+				filler = slotFiller2.substring(refPosition);
 				filler = filler.trim();
 				if (filler.length() > 0){
 					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
 					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
 				}
-				colonPosition = slotFiller3.indexOf(":");
-				slot = slotFiller3.substring(0, colonPosition);
+				refPosition = slotFiller3.indexOf(":");
+				if (refPosition > -1){
+				slot = slotFiller3.substring(0, refPosition);
 				slot = slot.trim();
-				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot, gapPosition);
-				slotEnd = thisLine.getOffset() + slotStart + slot.length();
+				slotStart = thisLine.getOffset() + thisLineText.indexOf(slot);
+				slotEnd = slotStart + slot.length();
 				annotations.add(new Annotation("Slot", slotStart, slotEnd));
-				filler = slotFiller3.substring(colonPosition, 0);
+				filler = slotFiller3.substring(refPosition);
 				filler = filler.trim();
 				if (filler.length() > 0){
-					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler, gapPosition);
-					fillEnd = thisLine.getOffset() + fillStart + filler.length();
+					fillStart = thisLine.getOffset() + thisLineText.indexOf(filler);
+					fillEnd = fillStart + filler.length();
 					annotations.add(new Annotation("Filler", fillStart, fillEnd));
-					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));
+					annotations.add(new Annotation("SlotFiller", slotStart, fillEnd));}}}}}
 				}
 					
 			}
