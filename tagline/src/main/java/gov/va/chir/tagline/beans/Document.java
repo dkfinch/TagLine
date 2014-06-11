@@ -167,7 +167,7 @@ public class Document {
 		for (int i = 0; i < lines.size(); i++) {
 			lines.get(i).setLineNum((i + 1));
 			lines.get(i).setOffset(offset);
-			offset += lines.get(i).getText().length() + nlChars;
+			offset += lines.get(i).getText().length() + 1; //nlChars;
 		}
 	}
 }

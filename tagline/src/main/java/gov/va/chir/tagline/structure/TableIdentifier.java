@@ -33,13 +33,14 @@ public class TableIdentifier extends Identifier {
 		//AnnotationType.TABLE
 		// TODO Auto-generated method stub
 		
+		
 		final List <Line> lines = document.getLines();
         boolean inTable = false;
+        int tableStart = -1;
+		int tableEnd = -1;
 		for (int i = 0; i < lines.size(); i++) {
 		
-			
-			int tableStart = -1;
-			int tableEnd = -1;
+			System.out.println("***********");
 			String thisLineText;
 			String thisWorkingText;
 			String nextLineText;
@@ -53,93 +54,187 @@ public class TableIdentifier extends Identifier {
 			thisLineText = thisLine.getText();
 			
 		
-			if (getLabel(thisLine).equalsIgnoreCase("THE")) {
+			if (getLabel(thisLine).equalsIgnoreCase("TBH")) {
+				System.out.println("Found a TBH");
 				if (inTable == true){
+					System.out.println("In A Table");
 					if (tableEnd > -1){
+						System.out.println("Table End Set");
+						System.out.println("Start = " + tableStart + "  End = " + tableEnd);
 						annotations.add(new Annotation("Table", tableStart, tableEnd));
+						System.out.println("Table Annotated");
 						thisWorkingText = thisLineText.trim();
 						tableStart = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText);
+						System.out.println("Table Start Set.");
 						tableEnd = -1;
+						System.out.println("Table End reset.");
+						System.out.println("Start = " + tableStart + "  End = " + tableEnd);
 					}
 				}
 				else {
 					inTable = true;
+					System.out.println("Table Started");
 					thisWorkingText = thisLineText.trim();
 					tableStart = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText);
-					tableEnd = -1;
+					System.out.println("Table Start Set");
+					System.out.println("Start = " + tableStart + "  End = " + tableEnd);
+				}
+			}
+			else if (getLabel(thisLine).equalsIgnoreCase("TDT")) {
+				System.out.println("Found a TDT");
+				if (inTable == true){
+					System.out.println("In A Table");
+					if (tableEnd > -1){
+						System.out.println("Table End Set");
+						System.out.println("Start = " + tableStart + "  End = " + tableEnd);
+					}
+					else{
+						System.out.println("Table End Not Set");
+						thisWorkingText = thisLineText.trim();
+						tableEnd = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText) + thisWorkingText.length();
+						System.out.println("Table End Set");
+						System.out.println("Start = " + tableStart + "  End = " + tableEnd);
+					}
+				}
+				else {
+					inTable = true;
+					System.out.println("Table Started");
+					thisWorkingText = thisLineText.trim();
+					tableStart = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText);
+					System.out.println("Table Start Set");
+					System.out.println("Start = " + tableStart + "  End = " + tableEnd);
 				}
 			}
 			else if (getLabel(thisLine).equalsIgnoreCase("CLA")){
+				System.out.println("Found a CLA");
 				if (inTable == true){
+					System.out.println("In A Table");
 					if (tableEnd > -1){
+						System.out.println("Table End Set.");
+						System.out.println("Start = " + tableStart + "  End = " + tableEnd);
 						annotations.add(new Annotation("Table", tableStart, tableEnd));
+						System.out.println("Table Annotatedt.");
 						thisWorkingText = thisLineText.trim();
 						tableStart = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText);
+						System.out.println("Table Start Set.");
 						tableEnd = -1;
+						System.out.println("Table End Reset.");
+						System.out.println("Start = " + tableStart + "  End = " + tableEnd);
 					}
 				}
 				
 				else {
 					inTable = true;
+					System.out.println("Table Started");
 					if (i > 0){
 						lastLine = lines.get(i-1);
+						System.out.println("Going after lastline.");
 						lastLineText = lastLine.getText();
-						if (getLabel(thisLine).equalsIgnoreCase("SHE")){
+						if (getLabel(lastLine).equalsIgnoreCase("SHE")){
+							System.out.println("Its a Section Header.");
 							lastWorkingText = lastLineText.trim();
 							tableStart = lastLine.getOffset() + lastLineText.indexOf(lastWorkingText);
-							tableEnd = -1;
+							System.out.println("Set Table Start.");
+							System.out.println("Start = " + tableStart + "  End = " + tableEnd);
+						}
+						else{
+							System.out.println("Its not a Section Header.");
+							thisWorkingText = thisLineText.trim();
+							tableStart = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText);
+							System.out.println("Set Table Start.");
+							System.out.println("Start = " + tableStart + "  End = " + tableEnd);
 						}
 					}
 					else {
 						thisWorkingText = thisLineText.trim();
 						tableStart = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText);
-						tableEnd = -1;
+						System.out.println("Set Table Start.");
+						System.out.println("Start = " + tableStart + "  End = " + tableEnd);
 					}
 				}
 			}
 			else if (getLabel(thisLine).equalsIgnoreCase("TBI")){
+				System.out.println("Found a TBI");
 				if (inTable == true){
+					System.out.println("In A Table");
 					thisWorkingText = thisLineText.trim();
-					tableEnd = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText) + thisLineText.length();
+					tableEnd = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText) + thisWorkingText.length();
+					System.out.println("Set Table End");
+					System.out.println("Start = " + tableStart + "  End = " + tableEnd);
 				}
 				else {
-					if (i < lines.size()){
+					if (i +1 < lines.size()){
 						nextLine = lines.get(i+1);
-						nextLineText = nextLine.getText(); 
-						if (getLabel(thisLine).equalsIgnoreCase("TBI")){
+						nextLineText = nextLine.getText();
+						System.out.println("Going after nextline.");
+						if (getLabel(nextLine).equalsIgnoreCase("TBI")){
+							System.out.println("Nextline is a TBI");
 							inTable = true;
+							System.out.println("Table Started");
 							if (i > 0){
 								lastLine = lines.get(i-1);
 								lastLineText = lastLine.getText();
-							
+								System.out.println("Going after lastline.");
 								if (getLabel(lastLine).equalsIgnoreCase("SHE")){
+									System.out.println("Its a Section Header.");
 									lastWorkingText = lastLineText.trim();
+									thisWorkingText = thisLineText.trim();
 									tableStart = lastLine.getOffset() + lastLineText.indexOf(lastWorkingText);
-									tableEnd = -1;
+									System.out.println("Table Start Set.");
+									tableEnd = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText) + thisWorkingText.length();
+									System.out.println("Table End Set.");
+									System.out.println("Start = " + tableStart + "  End = " + tableEnd);
 								}
+								else {
+									thisWorkingText = thisLineText.trim();
+									tableStart = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText);
+									System.out.println("Table Start Set.");
+									System.out.println("Start = " + tableStart + "  End = " + tableEnd);
+									}
 							}
-						}
-						else {
-							thisWorkingText = thisLineText.trim();
-							tableStart = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText);
-							tableEnd = -1;
+							else {
+								thisWorkingText = thisLineText.trim();
+								tableStart = thisLine.getOffset() + thisLineText.indexOf(thisWorkingText);
+								System.out.println("Table Start Set.");
+								System.out.println("Start = " + tableStart + "  End = " + tableEnd);
+							}
 						}
 					}
 				}
 			}
 			
 			else {
+				System.out.println("Found something else.");
 				if (inTable == true){
+					System.out.println("In A Table");
 					if (i+1 < lines.size()){
+						System.out.println("Going after nextline.");
 						nextLine = lines.get(i+1);
 						nextLineText = nextLine.getText();
-						if (! getLabel(thisLine).equalsIgnoreCase("TBI")){
+						if (! getLabel(nextLine).equalsIgnoreCase("TBI")){
+							System.out.println("Nextline not a TBI");
 							if (tableEnd > -1){
-							annotations.add(new Annotation("Table", tableStart, tableEnd));
-							inTable = false;
-							tableStart = -1;
-							tableEnd = -1;}
+								System.out.println("Table End Set.");
+								System.out.println("Start = " + tableStart + "  End = " + tableEnd);
+								annotations.add(new Annotation("Table", tableStart, tableEnd));
+								System.out.println("Table Annotated");
+								inTable = false;
+								System.out.println("Reset InTable Status");
+								tableStart = -1;
+								tableEnd = -1;
+								System.out.println("Start = " + tableStart + "  End = " + tableEnd);
+							}
+							else{
+								System.out.println("Table End Not Set.");
+								System.out.println("Start = " + tableStart + "  End = " + tableEnd);
+								inTable = false;
+								System.out.println("Reset InTable Status");
+								tableStart = -1;
+								tableEnd = -1;
+								System.out.println("Start = " + tableStart + "  End = " + tableEnd);
+							}
 						}
+						else{System.out.println("Nextline is a TBI ...");}
 					}
 				}
 			}
